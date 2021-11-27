@@ -5,14 +5,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "users")
-public class UserEntity {
-    @PrimaryKey(autoGenerate = true)
-    var id: Int? = null
-
-    @ColumnInfo(name = "email")
-    var userId: String? = null
+data class UserEntity (
+    @PrimaryKey @ColumnInfo(name = "email")
+    var userID: String,
 
     @ColumnInfo(name = "password")
-    var password: String? = null
-}
+    var password: String
+)
 

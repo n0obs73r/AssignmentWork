@@ -86,7 +86,7 @@
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
-            <com.google.android.gms.common.internal.SignInButtonImpl
+            <Button
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:background="@drawable/facebook"

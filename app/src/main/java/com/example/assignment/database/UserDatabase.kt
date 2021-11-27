@@ -4,27 +4,27 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.assignment.database.UserDao
-import com.example.assignment.database.UserEntity
 
-@Database(entities = [UserEntity::class], version = 2, exportSchema = false)
+@Database(entities = [UserEntity::class], version = 1, exportSchema = false)
 abstract class UserDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao?
+
+    abstract fun userDao(): UserDao
 
     companion object {
-        private const val dbName = "user"
-        private var userDatabase: UserDatabase? = null
+
+        private var databaseInstance: UserDatabase? = null
+
         @Synchronized
-        fun getUserDatabase(context: Context?): UserDatabase? {
-            if (userDatabase == null) {
-                userDatabase = Room.databaseBuilder(
-                    context!!,
-                    UserDatabase::class.java, dbName
-                )
-                    .fallbackToDestructiveMigration()
-                    .build()
+        fun getDatabase(context: Context): UserDatabase {
+            return databaseInstance ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    UserDatabase::class.java,
+                    "user_database"
+                ).build()
+                databaseInstance = instance
+                instance
             }
-            return userDatabase
         }
     }
 }

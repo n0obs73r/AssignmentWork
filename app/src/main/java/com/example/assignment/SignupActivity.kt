@@ -1,57 +1,73 @@
 package com.example.assignment
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.assignment.database.UserDao
-import com.example.assignment.database.UserDatabase
 import com.example.assignment.database.UserEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SignupActivity : AppCompatActivity() {
-    private val emailBox: EditText = findViewById(R.id.emailEditText)
-    private val passwordBox: EditText = findViewById(R.id.PasswordEditText)
-    val loginBtn: Button = findViewById(R.id.login_page_btn)
-    private val signupBtn: Button = findViewById(R.id.registerbtn)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
-        signupBtn.setOnClickListener {
-            signup()
+        findViewById<Button>(R.id.registerbtn).setOnClickListener {
+            GlobalScope.launch {
+                signup()
+            }
         }
 
+        findViewById<Button>(R.id.login_page_btn).setOnClickListener {
+            finish()
+        }
     }
 
-    private fun signup() {
+    private suspend fun signup() {
+        val email = findViewById<EditText>(R.id.emailEditText).text.toString()
+        val password = findViewById<EditText>(R.id.PasswordEditText).text.toString()
 
-        val userEntity = UserEntity()
-        userEntity.userId = emailBox.text.toString()
-        userEntity.password = passwordBox.text.toString()
+        when(Utils.validateInput(email, password)) {
+            Utils.ValidCodes.SUCCESS -> {
+                val newUser = UserEntity(email, password)
+                val userDao = (application as AssignmentApplication).database.userDao()
 
-        if (validateInput(userEntity)) {
-            val userDatabase = UserDatabase.getUserDatabase(applicationContext)
-            val userDao = userDatabase!!.userDao()
-            Thread {
-                userDao!!.registerUser(userEntity)
+                withContext(Dispatchers.IO) {
+                    userDao.registerUser(newUser)
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "New User Successfully Registered", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    finish()
+                }
+            }
+
+            Utils.ValidCodes.Missing -> {
                 runOnUiThread {
                     Toast.makeText(
-                        applicationContext,
-                        "User Registered!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        applicationContext, "Please enter both Email and Password", Toast.LENGTH_SHORT
+                    )
+                        .show()
                 }
-            }.start()
-        } else {
-            Toast.makeText(applicationContext, "fill all fields carefully", Toast.LENGTH_SHORT)
-                .show()
+            }
+
+            Utils.ValidCodes.INVALID_MAIL -> {
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Invalid Email", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+            Utils.ValidCodes.INVALID_PASSWORD -> {
+                runOnUiThread {
+                    Toast.makeText(applicationContext,"Password must be at least 8 characters", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
         }
-    }
-    private fun validateInput(userEntity: UserEntity): Boolean {
-        return userEntity.userId == null &&
-                userEntity.password == null
     }
 }
