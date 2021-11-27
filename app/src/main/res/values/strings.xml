@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MyAssignment</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="register">Register</string>
+    <string name="login">LogIn</string>
+    <string name="already_have_an_account">Already have an account?</string>
+</resources>
